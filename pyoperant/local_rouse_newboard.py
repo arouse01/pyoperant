@@ -1,6 +1,7 @@
 from pyoperant import hwio, components, panels, utils
 from pyoperant.interfaces import pyaudio_, arduino_
 
+# No idea what this variable does or how the channels are mapped
 _ROUSE_MAP = {
     1: ('/dev/teensy01', 2, 0, 2, 8),  # box_id:(subdevice,in_dev,in_chan,out_dev,out_chan)
     2: ('/dev/teensy02', 2, 4, 2, 16),
@@ -47,6 +48,18 @@ class RousePanel(panels.BasePanel):
                        20,  # House lights
                        22,  # Reinforcement solenoid 1
                        21,  # Reinforcement solenoid 2
+                       ]
+        elif boardtype == 'v4.0':
+            # Has two solenoids
+            INPUTS = [36,  # Trial IR
+                      35,  # Response IR
+                      ]
+
+            OUTPUTS = [38,  # Trial LED
+                       37,  # Response LED
+                       22,  # House lights
+                       41,  # Reinforcement solenoid 1
+                       40,  # Reinforcement solenoid 2
                        ]
         else:
             INPUTS = [37,  # Trial IR
@@ -179,6 +192,30 @@ class Rouse9(RousePanel):
         # Not sure if this is the working setup, or if boardtype=boardtype is
 
 
+class Rouse10(RousePanel):
+    """Rouse6 panel"""
+
+    def __init__(self, boardtype='v1.4'):
+        super(Rouse10, self).__init__(panel_id=10, boardtype=boardtype)
+        # Not sure if this is the working setup, or if boardtype=boardtype is
+
+
+class Rouse11(RousePanel):
+    """Rouse6 panel"""
+
+    def __init__(self, boardtype='v1.4'):
+        super(Rouse11, self).__init__(panel_id=11, boardtype=boardtype)
+        # Not sure if this is the working setup, or if boardtype=boardtype is
+
+
+class Rouse12(RousePanel):
+    """Rouse6 panel"""
+
+    def __init__(self, boardtype='v1.4'):
+        super(Rouse12, self).__init__(panel_id=12, boardtype=boardtype)
+        # Not sure if this is the working setup, or if boardtype=boardtype is
+
+
 # class Rouse7(RousePanel):
 #     """Rouse7 panel"""
 #     def __init__(self, boardtype='v1'):
@@ -200,12 +237,15 @@ PANELS = {"1": Rouse1,
           "6": Rouse6,
           "7": Rouse7,
           "8": Rouse8,
-          "9": Rouse9
+          "9": Rouse9,
+          "10": Rouse10,
+          "11": Rouse11,
+          "12": Rouse12
           }
 
 BEHAVIORS = ['pyoperant.behavior']
 
-DATA_PATH = '/home/rouse/bird/data/'
+DATA_PATH = '/home/aperture/bird/data/'
 
 # SMTP_CONFIG
 

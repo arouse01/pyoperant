@@ -41,7 +41,7 @@
     }
   },
   "block_design": {
-    "block_path": "/home/rouse/Desktop/pyoperant/pyoperant/pyoperant/behavior/go_nogo_interrupt_blocks.json",
+    "block_path": "/home/aperture/Desktop/pyoperant/pyoperant/pyoperant/behavior/go_nogo_interrupt_blocks.json",
     "order": [
       "shaping 1",
       "shaping 2",
@@ -87,8 +87,8 @@
     6
   ],
 
-  "stim_path": "/home/rouse/bird/stim",
-  "stim_list": "/home/rouse/Desktop/pyoperant/pyoperant/pyoperant/behavior/go_nogo_interrupt_stimuli.json",
+  "stim_path": "/home/aperture/bird/stim",
+  "stim_list": "/home/aperture/Desktop/pyoperant/pyoperant/behavior/go_nogo_interrupt_stimuli.json",
   "stims": {
     "b1i1_1500ir1.wav": "b1i1_1500ir1.wav",
     "b1i1_1500ir2.wav": "b1i1_1500ir2.wav",

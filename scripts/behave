@@ -8,7 +8,10 @@ import sys
 import collections
 
 # append this folder to working directory
-sys.path.append('/home/rouse/Desktop/pyoperant/pyoperant/pyoperant')
+sys.path.append('/home/aperture/Desktop/pyoperant/pyoperant/')
+
+# to fix print statements not working properly in 2.7 sometimes because of conflicts with stdout
+sys.stdout = sys.stderr = open('output.txt', 'w')
 
 try:
     import simplejson as json
@@ -24,7 +27,7 @@ except ImportError:
 try:
     from pyoperant.local import DATAPATH
 except ImportError:
-    DATAPATH = '/home/rouse/bird/data'
+    DATAPATH = '/home/aperture/bird/data'
 
 
 def parse_commandline(arg_str=sys.argv[1:]):
@@ -145,9 +148,10 @@ def main():
 
     BehaviorProtocol = find_protocol(cmd_line['protocol'])
 
-    # if ('debug' in parameters) and parameters['debug']:
-    # print("debug message: %s" % parameters)
-    # print("debug message: %s" % PANELS)
+    if ('debug' in parameters) and parameters['debug']:
+        print("debug message:")
+        print("debug message: %s" % parameters)
+        print("debug message: %s" % PANELS)
 
     for k in ['subject', 'panel_name', 'experiment_path']:
         parameters.pop(k) if k in parameters.keys() else None

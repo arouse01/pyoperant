@@ -65,7 +65,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
 
     class DeviceInfo:
         # Extracts device info from pyudev output: box number, device ID, USB device number
-        def __init__(self, device):
+        def __init__(self, device, firstBox=7):
             deviceString = device.device_links.next()
             self.log = logging.getLogger(__name__)
             try:
@@ -74,7 +74,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
                 boxLink = deviceStringSplit[1]
                 boxLinkSplit = re.split('Board(\\d*)', boxLink)
                 self.boxNumber = int(boxLinkSplit[1])
-                self.boxIndex = self.boxNumber - 1  # Teensy numbers are indexed from 1, but box array indexed from 0
+                self.boxIndex = self.boxNumber - firstBox  # Teensy numbers are indexed from 1, but box array indexed from 0
 
             except IndexError:
                 self.boxNumber = None
@@ -104,7 +104,8 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
         super(self.__class__, self).__init__()
         with wait_cursor():  # set mouse cursor to 'waiting'
             # Set up layout and widgets
-            testing = True
+            testing = False
+            self.firstBox = 7
             # Number of boxes declared in pyoperant_gui_layout.py
             if testing:
                 boxCount = 9
@@ -120,7 +121,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
             self.debug = False
 
             # region Menu bar
-            mainMenu = QtGui.QMenuBar()
+            mainMenu = QtGui.QMenu(self.menuButton)
             fileMenu = mainMenu.addMenu('&File')
 
             analyzeGuiAction = QtGui.QAction("Analy&ze", self)
@@ -166,7 +167,8 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
             autosleepMenu.addAction(self.ui_options['autosleep_all'])
             autosleepMenu.addSeparator()
 
-            self.setMenuBar(mainMenu)
+            self.menuButton.setMenu(mainMenu)
+            # self.setMenuBar(mainMenu)
             # endregion
 
             self.timer = QtCore.QTimer()
@@ -518,7 +520,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
             self.log.error('Warning: Selected file not found: ({})'.format(filePath))
 
     def create_json_file(self, boxnumber, birdname=''):
-        currentPath = os.path.dirname('/home/rouse/Desktop/pyoperant/pyoperant/pyoperant/behavior/')
+        currentPath = os.path.dirname('/home/aperture/Desktop/pyoperant/pyoperant/pyoperant/behavior/')
         paramFile = QtGui.QFileDialog.getOpenFileName(self, "Select Template for Settings", currentPath,
                                                       "JSON Files (*.json)")
         if paramFile:  # if user didn't pick a file don't replace existing path
@@ -531,7 +533,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
             try:
                 from pyoperant.local import DATAPATH
             except ImportError:
-                DATAPATH = '/home/rouse/bird/data'
+                DATAPATH = '/home/aperture/bird/data'
             data_dir = os.path.join(DATAPATH, birdname)
 
             if not os.path.exists(data_dir):
@@ -598,7 +600,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
 
     def start_box(self, boxnumber):
         # start selected box
-        actualboxnumber = boxnumber + 1  # Boxnumber is index, but actual box number starts from 1
+        actualboxnumber = boxnumber + self.firstBox  # Boxnumber is index, but actual box number starts from 1
 
         # Error checking: make sure all relevant boxes are filled and files are found:
         birdName = self.birdEntryBoxList[boxnumber].toPlainText()
@@ -620,17 +622,19 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
                 try:
                     from pyoperant.local import DATAPATH
                 except ImportError:
-                    DATAPATH = '/home/rouse/bird/data'
+                    DATAPATH = '/home/aperture/bird/data'
                 self.experimentPath = DATAPATH
 
                 if self.subprocessBox[boxnumber] == 0 or self.subprocessBox[boxnumber] == 1:  # Make sure box isn't
                     # already running or sleeping
                     commandString = ['python',
-                                     '/home/rouse/Desktop/pyoperant/pyoperant/scripts/behave',
-                                     '-P', str(boxnumber + 1),
+                                     '/home/aperture/Desktop/pyoperant/scripts/behave',
+                                     '-P', str(actualboxnumber),
                                      '-S', '{0}'.format(birdName),
                                      '{0}'.format(self.behaviorField.currentText()),
                                      '-c', '{0}'.format(jsonPath)]
+                    # lock = threading.Lock()
+                    # with lock:
                     self.subprocessBox[boxnumber] = subprocess.Popen(
                         commandString, stdin=open(os.devnull), stderr=subprocess.PIPE, stdout=open(os.devnull),
                         shell=self.args['debug']
@@ -677,6 +681,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
 
         while True:
             output = pipe.readline()
+            print(output)
             q.put(output)
 
             # Added the following so that the queue stops when the parent thread stops
@@ -745,9 +750,9 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
         # print deviceString
         if str(device.parent.subsystem) == 'usb':
             # deviceString[0:4] == '/dev':  # Only pass if device path is valid
-            devInfo = self.DeviceInfo(device)
+            devInfo = self.DeviceInfo(device, firstBox=self.firstBox)
             boxIndex = devInfo.boxIndex
-            if boxIndex < self.numberOfBoxes:  # ignore boxes outside of set number
+            if boxIndex < (self.numberOfBoxes + self.firstBox):  # ignore boxes outside of set number
                 # enable or disable
                 if action == 'add':
                     self.log.debug('USB device connected: Teensy {:02d}, device {:s}, USB: {:s}'.format(
@@ -791,7 +796,8 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
     # region Water system functions
     def water_control(self, boxindex, parameter='purge', purge_time=20):
 
-        boxnumber = boxindex + 1  # boxindex is device number - 1
+        # boxindex = boxindex
+        boxnumber = boxindex + self.firstBox  # boxindex is device number - 1
         if self.subprocessBox[boxindex] == 0:  # If box is not running
             if parameter == 'dialog':
                 dialog = SolenoidGui(boxnumber)
@@ -807,9 +813,9 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
                 device.readline()
                 device.flushInput()
                 self.log.debug("Successfully opened device {}".format(device_name))
-                device.write("".join([chr(16), chr(3)]))  # set channel 16 (solenoid) as output
+                device.write("".join([chr(41), chr(3)]))  # set channel 16 (solenoid) as output
                 # device.write("".join([chr(16), chr(2)]))  # close solenoid, just in case
-                device.write("".join([chr(16), chr(1)]))  # open solenoid
+                device.write("".join([chr(41), chr(1)]))  # open solenoid
                 startTime = time.time()
 
                 while True:
@@ -849,7 +855,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
         recordSound = True
 
         boxNumber = boxindex + 1
-        testFile = '/home/rouse/bird/stim/440 test tone.wav'
+        testFile = '/home/aperture/bird/stim/440 test tone.wav'
         soundOut = pyaudio.PyAudio()
         soundIn = pyaudio.PyAudio()
         tempRecording = 'Box {:02d} cal.wav'.format(boxNumber)
@@ -1054,6 +1060,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
                             self.start_box(boxnumber)  # restart box
                     else:
                         self.stop_box(boxnumber, error_mode=True)
+                        print("{0}{1}".format("Error, stopping box ", boxnumber))
                         # Box stopped on error, if soon after box wakeup time, try restarting
                         # This should only fire once after a failed startup, since the code can only get to this else
                         # statement if the box is supposed to be running and isn't
@@ -1073,7 +1080,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
     def refreshfile(self, boxnumber):
 
         if self.debug:
-            self.experimentPath = '/home/rouse/bird/data'
+            self.experimentPath = '/home/aperture/bird/data'
         birdName = str(self.birdEntryBoxList[boxnumber].toPlainText())
         # experiment_path = str(self.logpathList[boxnumber]+"/")
         summary_file = os.path.join(self.experimentPath, birdName, "{0}{1}".format(birdName, '.summaryDAT'))
@@ -1409,7 +1416,7 @@ class PyoperantGui(QtGui.QMainWindow, pyoperant_gui_layout.UiMainWindow):
         try:
             from pyoperant.local import DATAPATH
         except ImportError:
-            DATAPATH = '/home/rouse/bird/data'
+            DATAPATH = '/home/aperture/bird/data'
         self.experimentPath = DATAPATH
 
     def close_application(self, event):
@@ -2351,7 +2358,7 @@ class FolderSelect(QtGui.QDialog, pyoperant_gui_layout.FolderSelectWindow):
         super(self.__class__, self).__init__()
         self.setup_ui(self)  # This is defined in pyoperant_gui_layout.py file
 
-        self.data_folder = '/home/rouse/bird/data'
+        self.data_folder = '/home/aperture/bird/data'
 
         self.model = CheckableDirModel()
         self.parentIndex = self.model.setRootPath(self.data_folder)

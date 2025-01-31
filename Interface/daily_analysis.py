@@ -46,7 +46,7 @@ def log_config():
 
 
 log_config()
-dataDir = '/home/rouse/bird/data'
+dataDir = '/home/operant/bird/data'
 days_prior = 5
 
 folderList = []
@@ -69,7 +69,7 @@ for i in os.listdir(dataDir):
             if folderModTime > targetDateTime:
                 folderList.append(i)
 
-outputFolder = '/home/rouse/Desktop/daily_summary'
+outputFolder = '/home/operant/Desktop/daily_summary'
 
 birdCount = len(folderList)
 if birdCount > 0:

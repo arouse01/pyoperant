@@ -144,7 +144,7 @@ class UiMainWindow(object):
         # region Formatting templates
         # Text formatting
         font10 = QtGui.QFont()
-        font10.setPointSizeF(10.9)
+        font10.setPointSizeF(10)
         font11 = QtGui.QFont()
         font11.setPointSize(11)
         font11Bold = QtGui.QFont()
@@ -191,28 +191,35 @@ class UiMainWindow(object):
         # Menu at bottom of screen
         self.menuGrid = QtGui.QGridLayout()
         self.menuGrid.setObjectName(_from_utf8("menuGrid"))
+        self.menuButton = QtGui.QPushButton(self.gridLayoutWidget)
+        self.menuButton.setObjectName(_from_utf8("menuButton"))
+        self.menuButton.setSizePolicy(sizePolicy_minEx_max)
+        self.menuButton.setFont(font11)
+        self.menuButton.setMinimumSize(QtCore.QSize(27, 27))
+        self.menuButton.setMaximumSize(QtCore.QSize(27, 27))
+        self.menuGrid.addWidget(self.menuButton, 0, 0, 1, 1)
         self.stopAllButton = QtGui.QPushButton(self.gridLayoutWidget)
         self.stopAllButton.setObjectName(_from_utf8("stopAllButton"))
         self.stopAllButton.setSizePolicy(sizePolicy_minEx_max)
         self.startAllButton = QtGui.QPushButton(self.gridLayoutWidget)
         self.startAllButton.setObjectName(_from_utf8("startAllButton"))
         self.startAllButton.setSizePolicy(sizePolicy_minEx_max)
-        self.menuGrid.addWidget(self.stopAllButton, 0, 0, 1, 1)
-        self.menuGrid.addWidget(self.startAllButton, 0, 1, 1, 1)
+        self.menuGrid.addWidget(self.stopAllButton, 0, 1, 1, 1)
+        self.menuGrid.addWidget(self.startAllButton, 0, 2, 1, 1)
         self.behaviorField = QtGui.QComboBox(self.gridLayoutWidget)
-        self.behaviorField.setMinimumSize(QtCore.QSize(200, 0))
+        self.behaviorField.setMinimumSize(QtCore.QSize(150, 0))
         self.behaviorField.setMaximumSize(QtCore.QSize(300, 30))
         self.behaviorField.setObjectName(_from_utf8("behaviorField"))
         self.behaviorField.addItem(_from_utf8(""))
-        self.menuGrid.addWidget(self.behaviorField, 0, 4, 1, 1)
+        self.menuGrid.addWidget(self.behaviorField, 0, 5, 1, 1)
         self.behaviorLabel = QtGui.QLabel(self.gridLayoutWidget)
         self.behaviorLabel.setMinimumSize(QtCore.QSize(70, 0))
         self.behaviorLabel.setMaximumSize(QtCore.QSize(80, 30))
         # self.behaviorLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.behaviorLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.behaviorLabel.setObjectName(_from_utf8("behaviorLabel"))
-        self.menuGrid.addWidget(self.behaviorLabel, 0, 3, 1, 1)
-        self.menuGrid.addItem(add_spacer(20, policy='min'), 0, 2, 1, 1)
+        self.menuGrid.addWidget(self.behaviorLabel, 0, 4, 1, 1)
+        self.menuGrid.addItem(add_spacer(20, policy='min'), 0, 3, 1, 1)
         self.mainGrid.addLayout(self.menuGrid, 2 * rowCount, 0, 1, 2 * columnCount - 1)
         # endregion
 
@@ -543,6 +550,8 @@ class UiMainWindow(object):
         # extra space due to padding:
         #   layoutSpacing * (number of columns + number of vertical lines + 1 [for whole layout])
         spacingWidthTotal = (columnCount + numVerticalLines + 1) * self.mainGrid.getContentsMargins()[0]
+        if self.firstBox + self.numberOfBoxes > 10:
+            spacingWidthTotal = spacingWidthTotal + 20  # Extra space for double-digit box number
         mainGridWidth = math.ceil(self.gridLayoutWidget.sizeHint().width() + spacingWidthTotal)
         mainGridHeight = self.gridLayoutWidget.sizeHint().height()
 
@@ -562,7 +571,8 @@ class UiMainWindow(object):
         for box in range(0, self.numberOfBoxes):
             self.birdEntryLabelBoxList[box].setText(_translate("MainWindow", "Bird", None))
             self.checkActiveLabelBoxList[box].setText(_translate("MainWindow", "Active", None))
-            self.labelBoxList[box].setText(_translate("MainWindow", _from_utf8(" Box %s " % str(box + 1)), None))
+            self.labelBoxList[box].setText(_translate("MainWindow", _from_utf8(" Box %s " %
+                                                                               str(box + self.firstBox)), None))
             self.phaseLabelList[box].setText(_translate("MainWindow", _from_utf8("Phase: "), None))
             self.lastTrialLabelList[box].setText(_translate("MainWindow", _from_utf8("Last Trial: "), None))
             self.paramFileButtonBoxList[box].setText(_translate("MainWindow", "...", None))

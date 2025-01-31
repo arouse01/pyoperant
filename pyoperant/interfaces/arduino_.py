@@ -74,7 +74,7 @@ class ArduinoInterface(base_.BaseInterface):
         self.device.port = self.device_name
         self.device.baudrate = self.baud_rate
         self.device.timeout = 1
-        self.device.setDTR(False)
+        # self.device.setDTR(False)
         self.device.open()
 
         if self.device is None:
